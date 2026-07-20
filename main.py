@@ -164,16 +164,26 @@ with tab1:
                 )
 
         st.markdown("---")
+
+        def _color_value(v):
+            if isinstance(v, (int, float)):
+                if v > 0:
+                    return "color: red;"
+                elif v < 0:
+                    return "color: blue;"
+            return ""
+
+        try:
+            styled_df = summary_df.style.map(_color_value, subset=["전일대비", "등락률(%)"])
+        except AttributeError:
+            # 구버전 pandas 호환 (map이 없는 경우 applymap 사용)
+            styled_df = summary_df.style.applymap(_color_value, subset=["전일대비", "등락률(%)"])
+
         st.dataframe(
-            summary_df.style.applymap(
-                lambda v: "color: red;" if isinstance(v, (int, float)) and v > 0
-                else ("color: blue;" if isinstance(v, (int, float)) and v < 0 else ""),
-                subset=["전일대비", "등락률(%)"],
-            ),
+            styled_df,
             use_container_width=True,
             hide_index=True,
         )
-
 
 # ---------------------------------------------------------
 # 탭 2: 종목 상세 (캔들차트 + 이동평균 + 거래량)
